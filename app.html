@@ -1,1 +1,312 @@
 
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gradient Todo App</title>
+
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: Arial, sans-serif;
+    }
+
+    body {
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+      background: linear-gradient(135deg, #667eea, #764ba2, #f093fb);
+    }
+
+    .todo-container {
+      width: 100%;
+      max-width: 430px;
+      padding: 30px;
+      border-radius: 24px;
+      background: rgba(255, 255, 255, 0.18);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      box-shadow: 0 15px 40px rgba(30, 20, 80, 0.25);
+      backdrop-filter: blur(15px);
+    }
+
+    h1 {
+      color: white;
+      text-align: center;
+      margin-bottom: 8px;
+      font-size: 30px;
+    }
+
+    .subtitle {
+      text-align: center;
+      color: #f4eaff;
+      margin-bottom: 25px;
+      font-size: 14px;
+    }
+
+    .input-group {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    #taskInput {
+      min-width: 0;
+      flex: 1;
+      padding: 14px;
+      border: none;
+      outline: none;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.95);
+      font-size: 14px;
+    }
+
+    button {
+      border: none;
+      cursor: pointer;
+      transition: 0.25s;
+    }
+
+    #addBtn {
+      padding: 0 18px;
+      border-radius: 12px;
+      color: white;
+      font-size: 22px;
+      background: linear-gradient(135deg, #ff758c, #ff7eb3);
+    }
+
+    #addBtn:hover {
+      transform: scale(1.06);
+    }
+
+    .task-info {
+      display: flex;
+      justify-content: space-between;
+      color: white;
+      font-size: 13px;
+      margin-bottom: 12px;
+    }
+
+    #taskList {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .task {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 14px;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.92);
+      color: #39304e;
+      animation: appear 0.25s ease;
+    }
+
+    .task span {
+      flex: 1;
+      overflow-wrap: anywhere;
+      font-size: 14px;
+    }
+
+    .task input {
+      width: 17px;
+      height: 17px;
+      accent-color: #8b5cf6;
+      cursor: pointer;
+    }
+
+    .task.completed span {
+      text-decoration: line-through;
+      opacity: 0.5;
+    }
+
+    .delete-btn {
+      padding: 7px 9px;
+      border-radius: 8px;
+      color: #fff;
+      background: linear-gradient(135deg, #ff5f6d, #ff416c);
+    }
+
+    .delete-btn:hover {
+      transform: scale(1.05);
+    }
+
+    #emptyMessage {
+      color: white;
+      text-align: center;
+      padding: 25px 5px;
+      font-size: 14px;
+    }
+
+    .footer {
+      margin-top: 22px;
+      text-align: center;
+      color: #f4eaff;
+      font-size: 12px;
+    }
+
+    @keyframes appear {
+      from {
+        opacity: 0;
+        transform: translateY(8px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @media (max-width: 400px) {
+      .todo-container {
+        padding: 22px;
+      }
+
+      h1 {
+        font-size: 26px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="todo-container">
+    <h1>✨ My Todo List</h1>
+    <p class="subtitle">Make today productive!</p>
+
+    <div class="input-group">
+      <input
+        type="text"
+        id="taskInput"
+        placeholder="Enter a new task..."
+        maxlength="200"
+        aria-label="New task"
+      >
+      <button id="addBtn" aria-label="Add task">+</button>
+    </div>
+
+    <div class="task-info">
+      <span id="totalTasks">0 tasks</span>
+      <span id="completedTasks">0 completed</span>
+    </div>
+
+    <ul id="taskList"></ul>
+
+    <p id="emptyMessage">🌸 No tasks yet. Add one above!</p>
+
+    <div class="footer">
+      Small steps every day lead to big results 💜
+    </div>
+  </div>
+
+  <script>
+    const taskInput = document.getElementById("taskInput");
+    const addBtn = document.getElementById("addBtn");
+    const taskList = document.getElementById("taskList");
+    const emptyMessage = document.getElementById("emptyMessage");
+    const totalTasks = document.getElementById("totalTasks");
+    const completedTasks = document.getElementById("completedTasks");
+
+    let tasks = [];
+
+    function addTask() {
+      const text = taskInput.value.trim();
+
+      if (text === "") {
+        taskInput.focus();
+        return;
+      }
+
+      tasks.push({
+        id: Date.now() + Math.random(),
+        text: text,
+        completed: false
+      });
+
+      taskInput.value = "";
+      renderTasks();
+      taskInput.focus();
+    }
+
+    function toggleTask(id) {
+      tasks = tasks.map(task =>
+        task.id === id
+          ? { ...task, completed: !task.completed }
+          : task
+      );
+
+      renderTasks();
+    }
+
+    function deleteTask(id) {
+      tasks = tasks.filter(task => task.id !== id);
+      renderTasks();
+    }
+
+    function renderTasks() {
+      taskList.innerHTML = "";
+
+      tasks.forEach(task => {
+        const li = document.createElement("li");
+        li.className = "task";
+
+        if (task.completed) {
+          li.classList.add("completed");
+        }
+
+        const checkbox = document.createElement("input");
+        checkbox.type = "checkbox";
+        checkbox.checked = task.completed;
+        checkbox.setAttribute(
+          "aria-label",
+          "Complete " + task.text
+        );
+        checkbox.addEventListener("change", () => {
+          toggleTask(task.id);
+        });
+
+        const span = document.createElement("span");
+        span.textContent = task.text;
+
+        const deleteBtn = document.createElement("button");
+        deleteBtn.className = "delete-btn";
+        deleteBtn.textContent = "✕";
+        deleteBtn.setAttribute("aria-label", "Delete " + task.text);
+        deleteBtn.addEventListener("click", () => {
+          deleteTask(task.id);
+        });
+
+        li.append(checkbox, span, deleteBtn);
+        taskList.appendChild(li);
+      });
+
+      const done = tasks.filter(task => task.completed).length;
+
+      totalTasks.textContent =
+        tasks.length + (tasks.length === 1 ? " task" : " tasks");
+
+      completedTasks.textContent = done + " completed";
+
+      emptyMessage.style.display =
+        tasks.length === 0 ? "block" : "none";
+    }
+
+    addBtn.addEventListener("click", addTask);
+
+    taskInput.addEventListener("keydown", event => {
+      if (event.key === "Enter") {
+        addTask();
+      }
+    });
+
+    renderTasks();
+  </script>
+</body>
+</html>
